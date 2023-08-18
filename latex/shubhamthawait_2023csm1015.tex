@@ -1,0 +1,710 @@
+\documentclass{article}
+\usepackage{graphicx} % Required for inserting images
+\usepackage{multicol}
+
+\title{Joint Optimization of Trajectory Planning and Task Scheduling in
+Heterogeneous Multi-UAV System}
+\author{Shubham Thawait 2023csm1015}
+
+\date{}
+
+\begin{document}
+
+\maketitle
+\begin{multicols}{2}
+\begin{abstract}
+    The use of unmanned aerial vehicles (UAV) as a new sensing paradigm is emerging for surveillance and trackingapplications, especially in the infrastructure-less environment. One such application of UAVs is in the construction industry where currently prevalent manual progresstracking results in schedule delays and cost overruns. Inthis paper, we develop a heterogeneous multiUAV framework for progress tracking of large construction sites. The
+proposed framework consists of Edge U AV which coordinates the data relay of the visual sensor-equipped Inspection UAVs (I U AV s) to the cloud. Our framework jointly takes into consideration the trajectory optimization of the Edge U AV and the stability of system queues. In particular, we develop a Distance and Access Latency Aware
+Trajectory (DLAT) optimization that generates a fair access schedule for I U AV s. In addition, a Lyapunov based
+online optimization ensures the system stability of the average queue backlogs for data offloading tasks. Through a
+message based mechanism, the coordination between the
+set of I U AV s and Edge U AV is ensured without any
+dependence on any central entity or message broadcasts.
+The performance of our proposed framework with joint
+optimization algorithm is validated by extensive simulation results in different parameter settings.
+Keyword: Path Planning, Task Scheduling, Data Offloading, Construction Site Monitoring, Unmanned Aerial
+Vehicles (UAVs), Lyapunov Optimization
+\end{abstract}
+
+\section{Introduction}
+The unmanned aerial vehicle (UAV) based solutions are
+emerging in various domains such as wireless sensing \cite{mozaffari2019tutorial},
+payload delivery , precision agriculture , help and
+rescue operations [4], etc. Moreover, with the current
+trend of automation, sensing and information exchange
+in Industry 4.0, UAV based applications are also finding
+their place in the construction industry especially for re-
+source tracking and progress monitoring using aerial im-
+agery. Such solutions are helpful in infrastructure-less
+large construction sites as they provide ease of deploy-
+ment, quick access to the ground-truth data and higher
+reachability and coverage [5]. Further, the autonomous
+or semi-autonomous UAV based solutions could facilitate
+progress monitoring, building inspections (for cracks or
+other defects), safety inspections (to find any environ-
+mental hazards) and many more construction-specific au-
+dits automatically. The UAV based visual monitoring of
+under-construction projects also allows simultaneous ob-
+servability of ground-truth data by different collaborating
+entities. Availability of such data and information helps
+in timely assessments that could reduce schedule delays,
+cost overruns, resource wastage and financial losses which
+are not uncommon in construction projects.
+A plausible solution to address the aforementioned
+challenges could be a Mobile Edge Computing (MEC)
+[6] based heterogeneous multi-UAV framework. Such a
+framework along with the prior geometric knowledge avail-
+able about the construction site as gathered from a Build-
+ing Information Model (BIM)[7] could help create an ef-
+fective multi-UAV based visual monitoring system for con-
+struction sites. As for any constrained environment, the
+optimization of computational resources is central to de-
+velop a solution. The integration of UAVs and MEC into
+a single framework could facilitate that with efficient data
+collection/processing from the UAV based dynamic sen-
+sors in infrastructure-less environments [8]. In addition,
+an MEC based framework can help to perform partial
+computation offloading wherein a part of data is processed
+by the UAVs while the rest gets offloaded to the cloud.
+An MEC based UAV framework is not new and the de-
+ployment of the UAVs as base stations or edge servers
+is widely studied [9, 10]. These studies reflect on the flexibility in deployment of UAV based edge computing
+components. However, there is a problem of buffer over-
+flow of UAVs due to the limited on-board processing and
+the shared bandwidth to transfer data to the cloud which
+leads to instability in the system. In addition, the dy-
+namic nature of such systems with varying data traffic
+and continuous movement of UAVs makes it difficult to
+stabilize or control the system in a deterministic man-
+ner. Researchers have used online Lyapunov optimization
+[11] to address such system instabilities. Lyapunov opti-
+mization considers the stability of the system with time
+varying data and optimizes time averages of system utility
+and queue backlogs.
+In this paper, we address the challenges of deploying
+a heterogeneous multi-UAV system for construction site
+monitoring by the joint optimization of UAV trajectory
+planning and data offloading task scheduling. The pro-
+posed framework employs two types of UAVs viz. Inspec-
+tion UAVs I U AV s and Mobile Edge UAVs (Edge U AV ).
+While the former is deployed as visual sensors to collect
+visual data from different locations of the site, the latter
+interacts and collects data from I U AV s, and offloads the
+same to the cloud. The core objective of the framework
+is to minimize the total energy consumption of the sys-
+tem while considering the data queue backlogs of I U AV s
+and Edge U AV and also jointly optimizing the trajectory
+of the Edge U AV in accordance with the trajectories of
+I U AV s having minimum access latency and travel dis-
+tance. The online resource management such as transmis-
+sion power and processor frequency of the Edge U AV is
+evolved using Lyapunov optimization (as in [12]).
+The rest of the paper is organised as follows: Section
+2 presents the proposed heterogeneous multi-UAV frame-
+work for construction site monitoring. The overall system
+objective is discussed in Sections 3. Sections 4 and 5 dis-
+cuss the trajectory optimization and Lyapunov based sys-
+tem stability, respectively. The simulation setup has been
+presented in Section 6. Section 7 discusses the results
+gathered from the experiments while Section 8 concludes
+the paper.
+
+\section{Heterogeneous Multi-UAV Frame-
+work}
+Figure ?? depicts the overall multi-UAV framework with
+all its components. The system consists of two hetero-
+geneous UAVs i.e. a set of Inspection UAVs I U AV =
+{I U AV1, I U AV2, I U AV3, ....., I U AVN } and a Mobile
+Edge UAV (Edge U AV ). I U AV s are smaller in size and
+are more agile. They collect visual data from a set of
+Point of Interests (PoIs) denoted as L = {l1, l2, l3....lk}
+across the construction site. As the construction sites are
+infrastructure-less environments, there are limited Access
+Points (AP) available for connectivity to the cloud. Fur-
+ther, the I U AV s possess limited connectivity range that
+makes it difficult for them to transfer data to cloud di-
+rectly. In addition, the I U AV s move in the 3D Cartesian
+coordinate system. The Edge U AV , which is larger in size
+and possesses higher computational capabilities, coordi-
+nates with the I U AV s to relay the data (after partially
+processing the same) to the cloud. Edge U AV always
+maintains a constant height and thus its trajectory lies in
+an horizontal plane.
+The communication between I U AV and Edge U AV
+(A2A channel) has limited range and bandwidth. We
+have assumed the achievable data transmission rate of
+the I U AVi in a given time slot as dof f
+i (t). Further, The
+height of the Edge U AV is h which is dependent on cov-
+erage range r and line of sight (LoS) loss caused due to
+environmental effects [13].
+The A2A channel power gain (\zeta) from I U AV to
+Edge U AV can be given as:
+
+$$ \zeta = g_0*(\frac{dis_0}{dis_1})^\theta $$
+
+ (1)
+where g0 is the path loss constant, dis0 is the reference
+distance, dist distance between the UAV_s, and \theta is the
+path loss exponent.
+
+
+\subsection{Data collection and offloading}
+
+Each PoI (li) is a tuple (< di, ψi >) where di specifies the
+amount of data (images) to be collected and ψi denotes the
+coordinates of the site locations in 3D space. The sequence
+of PoIs to be visited is provided to I U AV s and same is
+also shared with the Edge U AV . During the traversal
+along the sequence of PoIs, the limited buffer may make
+the I U AV wait at some PoIs along the trajectory until
+it offloads the data to the Edge U AV .
+The Edge U AV can communicate with one of the
+I U AVi in a time slot. The data gathered by each of
+the I U AVi in a time slot t is denoted by Ai(t). Qi(t)
+represents the queue of the I U AVi and dof f
+i (t) denotes
+2
+the amount of data offloaded to the Edge U AV by the
+I U AVi in time-slot t. The recursive equation to update
+the Qi(t) is as follows:.
+Qi(t + 1) = max{Qi(t) − dof f
+i (t), 0} + Ai(t) (2)
+The Edge U AV accepts data from the selected I U AVi
+in the time-slot t in its queue L(t). The following equation
+updates L(t) recursively:
+L(t + 1) = max{L(t) − c(t) − dof f
+edge(t), 0} + Aedge(t) (3)
+where Aedge(t) is the data arrived from the selected
+I U AVi in time-slot t, c(t) is the data processed by the
+Edge U AV in time-slot t, and dof f
+edge(t) is the number of
+bits offloaded to the cloud in time-slot t.
+
+\section{System Objective}
+n the proposed framework, the offloading of data happens
+at two stages - 1) from I U AVi to Edge U AV and 2) from
+Edge U AV to the cloud. Our main focus is to achieve the
+end-to-end data offloading to the cloud by minimizing the
+total energy consumption of the whole system (Esystem)
+which is defined as:
+Esystem(t) = Etransition
+edge (t) + EComm
+edge (t)
++
+NX
+i=1
+(EComm
+i (t))
+! (4)
+where Etransition
+edge (t) is the transition energy of the
+Edge U AV , EComm
+edge (t) is a communication energy of the
+Edge U AV and EComm
+i (t) is the communication energy
+of the ithI U AVi.
+Further, we discuss the various components of Esystem
+along with the expressions to calculate the same.
+\subsection{Transition energy of Edge U AV}
+The transition energy of Edge U AV refers to the energy
+consumed in moving from one location to another. The
+transition energy of the Edge U AV is given as:
+Etransition
+edge = κ||vel(t)||2 (5)
+where κ is a constant that depends on the total mass of
+the Edge U AV and vel(t) is the velocity of I U AV
+
+\subsection{Communication energy of Edge U AV}
+Edge U AV offloads the data to cloud through a wire-
+less channel [14]. The communication energy consumed
+to transmit the data to the cloud is given as:
+Ecomm
+edge (t) = (2
+dof f
+edge(t)
+W ∗τ − 1) ∗ N0W
+ζ ∗ τ (6)
+where the parameters are defined in the Table ??
+\subsection{Communication Energy of I U AV}
+The energy consumed for offloading the dof f
+i (t) data bits
+at time slot t from the selected I U AVi to the Edge U AV
+using the A2A channel of bandwidth W Hz is given simi-
+larly to Equation 6 as:
+Ecomm
+i (t) = (2 dof f
+i (t)
+W ∗τ − 1) ∗ N0W
+ζ ∗ τ (7)
+As the PoIs are predefined and the I U AV s follow a
+predetermined path, the energy consumed for the move-
+ment of I U AV s are not taken into consideration.
+Given the energy of the system, our goal is to find
+the optimal parameter values so as to minimize the ex-
+pected cumulative energy across the time horizon. The
+system policy in every time-slot t can be given by X(t) =
+{Fedge(t), pi(t), Pedge(t), Sedge(t)}. Hence, the end-to-end
+data offloading policy parameters X(t) aims at minimiz-
+ing total expected energy of the system. As the chan-
+nel information for the data offloading is not determin-
+istic and varies in the environment, the amount of bits
+arrived at the Edge U AV depends upon the channel char-
+acteristics as well as the current position of the selected
+I U AVi. Such time-coupling of variables is responsible for
+the stochastic nature of the system. The overall optimiza-
+tion model for the stable system performance is given as:
+3
+P1: min
+X(t) lim
+T →∞
+1
+T
+TX
+t=1
+E[Esystem(t)]
+s.t.
+0 ≤ FM E (t) ≤ F max tϵT (C1)
+0 ≤ pi(t) ≤ pi,max i = 1...N tϵT (C2)
+0 ≤ Pedge(t) ≤ Pmax tϵT (C3)
+dof f
+i (t) ≤ Qi(t) i = 1..N tϵT (C4)
+c(t) ≤ Fmaxτ
+ρedge
+tϵT (C5)
+dof f
+i ≤ W τ log2(1 + (ζ)pi,max(t)
+No ∗ W ) i = 1..N tϵT (C6)
+dof f
+edge(t) ≤ W τ log2(1 + ζPmax(t)
+NoW ) tϵT (C7)
+lim
+T →∞
+E[Qi(t)]
+T = 0 i = 1..N tϵT (C8)
+lim
+T →∞
+E[L(t)]
+T = 0 tϵT (C9)
+The constraints C1 and C3 defines the maximum
+frequency and maximum transmission power of the
+Edge U AV respectively. In addition, C5 defines the max-
+imum number of bits processed by Edge U AV . Further-
+more, C4 and C6 upper bound the number of transmitted
+bits. Similarly, for I U AV , the constraints C2, C4 and C6
+bound the number of transmitted bits. The constraints
+C8 and C9 establish the rate stability of all system queues
+(I U AVi and Edge U AV ). Next we discuss the model to
+optimize the trajectory of the Edge U AV with respect to
+the trajectories of I U AV s.
+
+\section{Distance and Latency Aware Trajectory}
+The flexible and dynamic trajectory planning of
+Edge U AV could help in applications within construction
+industry where it is hard to reach by terrestrial commu-
+nication infrastructure. As already mentioned, the po-
+sition of I U AV s changes in every time-slot since they
+move through different PoIs to collect data. Hence, the
+Edge U AV ’s trajectory needs to be estimated in such a
+manner that it can connect and access an I U AVi in a
+time-slot before the I U AVi’s queue overflows. Whenever
+an I U AVi’s queue gets full, it doesn’t move to its next
+designated PoI and sojourns at the same PoI until it is
+able to offload its data to the Edge U AV and free up
+some queue space. Hence, in order to choose one of the
+I U AV s to offload its queue, the Edge U AV would re-
+quire the real-time information about the queues of all the
+I U AV s in each time-slot. This information is not avail-
+able a priori due to the dynamic nature of the system. We
+use a message passing based approach for estimating the
+queue sizes of the I U AV s in order to make a selection.
+Further, the trajectory of the Edge U AV must be opti-
+mized so as to consume minimal energy. The trajectory
+optimization model of Edge U AV optimizes the trade-off
+between transition energy of Edge U AV and access laten-
+cies of all I U AVis. In addition, the access latency based
+data offloading generates a fair schedule for the I U AV s
+to offload data to the Edge U AV . Access latency (Ri(t))
+of the ith I U AVi in the time-slot t is the difference be-
+tween the time of its last access by the Edge U AV and
+the current time-slot.
+P2: min
+X(t)
+TX
+t=1
+NX
+i=1
+xi(t) ∗ ||Sedge(t + 1) − Sedge(t)||2
+s.t.
+||Sedge(t) − Si(t)|| ≤ vmaxτ , i = {1..N } tϵT (C1)
+h2
+i (t) + ||Sedge(t) − Si(t)||2 ≤gopmax(2 dof f
+i
+2W τ − 1)−1N −2
+o (C2)
+Qi(t) ≥ 0, iϵ{1..N }(C3)
+NX
+i=0
+( Ri(t)(1 − xi(t)
+(N − 1) ) ≤ Rmax, iϵ{1..N }(C4)
+NX
+i=0
+(xi(t) ∗ Qi(t)) ≥ 1, iϵ{1..N }(C5)
+NX
+i=0
+xi(t) = 1 iϵ1..N (C6)
+The first constraint C1 of optimization model P 2 signifies
+the distance travelled within a time-slot is limited by the
+maximum velocity. The following constraint C2 restricts
+that the selected I U AVi should be in the coverage range
+of the Edge U AV . Constraint C3 denotes that the queue
+of the selected I U AVi shouldn’t be empty while C4 lim-
+its the time that has elapsed since the last access of ith
+I U AVi should be less than Rmax. The constraint in C5
+selects the I U AVi which has data to offload whereas C6
+4
+is a binary constraint to select only one of the I U AVi in
+a time-slot.
+
+\section{Lyapunov Optimization based System Stability}
+The model presented in P1 in Section 3 is a stochastic op-
+timization problem. The data arrival at the system queues
+is random in nature. With the help of online Lyapunov
+optimization algorithm, we can solve such stochastic opti-
+mization models and jointly stabilize all queues by finding
+the optimal X(t) in each time slot [15].
+The quadratic Lyapunov function [15] associates a
+scalar measure to queues of the system. Further, the sta-
+bility of the system is maintained by a guaranteed mean
+rate stability of the evolving queues i.e.
+lim
+T →∞
+E[Qi(t)]
+T = 0, ∀i ∈ 1, 2, ..N (8)
+lim
+T →∞
+E[L(t)]
+T = 0 (9)
+Z(v(t)) = 1
+2
+" NX
+i=1
+Qi(t)2 + L(t)2
+#
+(10)
+v(t) = [{Qi(t)}N
+i=1, L(t)] consists of all backlog queues of
+the system at time t and Z(.) is quadratic Lyapunov func-
+tion of system queues.
+The Lyapunov drift corresponding to above function
+can be given as:
+△Z(v(t)) = E[(z(v(t + 1)) − z(v(t)))] (11)
+The Lyapunov drift plus a penalty function is minimized
+to stabilize the queue backlog of the system which is given
+as:
+△D(t) = △Z(v(t)) + V ∗ E[Esystem(t)] (12)
+where V is a positive system constant which controls the
+trade-off between Lyapunov drift and the expected energy
+of the system. A high value of parameter V signifies more
+weight on minimizing energy of the system at the cost of
+high queue backlog. Hence, V acts as a trade-off param-
+eter between system’s energy and queue backlog.
+An upper bound on △Z(v(t)) can be derived as, (for
+details see [15, 11])
+Z(v(t)) =E[−
+NX
+i=1
+Qi(t) ∗ dof f
+i (t)]−
+E[L(t) ∗ (c(t) + dof f
+edge(t))] + C
+(13)
+where C is a deterministic constant.
+As a result, the upper bound of the drift plus penalty
+function becomes
+△D(t) ≤ C − E[
+NX
+i=1
+Qi(t)dof f
+i (t) − L(t)(c(t) + r(t))]
++V ∗ E[Esystem(t)|v(t)]
+(14)
+Hence, the original formulation P1 is reduced to P3 which
+bounds the system’s drift to keep the system stable as
+follows:
+P3 min
+X(t)E
+"
+−
+NX
+i=1
+Qi(t) ∗ dof f
+i (t)
+#
+− E[L(t)(c(t)
++dof f
+edge(t))] + V E[Esystem(t)]
+s.t.
+0 ≤ FM E (t) ≤ F max tϵT (C1)
+0 ≤ pi(t) ≤ pi,max i = 1...N tϵT (C2)
+0 ≤ Pedge(t) ≤ Pmax tϵT (C3)
+dof f
+i (t) ≤ Qi(t) i = 1..N tϵT (C4)
+c(t) ≤ Fmaxτ
+ρedge
+tϵT (C5)
+dof f
+i ≤ W τ log2(1 + (ζ)pi,max(t)
+No ∗ W )i = 1..N tϵT (C6)
+dof f
+edge(t) ≤ W τ log2(1 + ζPmax(t)
+N0W ) tϵT (C7)
+As can be observed, the constraints in P3 is a subset of
+the constraints in P1. To further simplify the solution of
+the optimization formulation, P3 could be reformulated
+as two separate sub-problems provided the positions of
+Edge U AV and I U AVi are fixed in a given time slot t.
+\subsection{Transmission energy optimization of
+I U AV s}First sub-problem deals with the optimization of param-
+eters related to the I U AVi. The variables Sedge(t) i.e.
+5
+position of Edge U AV and the offloaded bits of the se-
+lected I U AVi are coupled in particular time interval. The
+fixed position of Edge U AV decouples these variables. In
+the optimization model P 3.1, the transmission energy
+is optimized for a single time-slot given the position of
+Edge U AV :
+P 3.1 min
+pi(t) −
+NX
+i=1
+Qi(t) ∗ dof f
+i (t) + V ∗
+NX
+i=1
+pi(t) ∗ τ
+s.t.
+0 ≤ pi(t) ≤ pi,max i = 1..N tϵT
+dof f
+i (t) ≤ Qi(t) i = 1..N tϵT
+dof f
+i ≤ W ∗ τ log2(1 + (ζ) ∗ pi,max(t)
+No ∗ W ) i = 1...N tϵT
+It can be observed that objective function in P 3.1 is a
+convex function. First constraint is linear and the sec-
+ond constraint is upper bounded by a concave function.
+As a result, the stationary point of the objective func-
+tion can be derived as: p∗
+i (t) = min{max{ No
+ζ ( Qi(t)W
+V +
+1), 0}, pmax}.
+\subsection{Transmission energy optimization of
+Edge U AV}
+The second sub-problem deals with the optimization of the
+Edge U AV parameters for the amount of data offloaded
+to the cloud. Further, here we can ignore the processor
+frequency parameters and the associated constraints from
+the optimization as they do not affect the energy opti-
+mization. The updated optimization model is given as:
+P 3.2 min
+Pedge(t)−L(t)(dof f
+edge(t)) + V Pedge(t)τ
+s.t.
+dof f
+edge ≤ L(t)
+0 ≤ Pedge(t) ≤ Pmax
+r(t) ≤ W τ log2(1 + ζPmax(t)
+NoW ) tϵT
+The model P 3.2 has a convex optimization objective sub-
+ject to convex constraints to solve the optimal transmis-
+sion power of the Edge U AV . The stationary point of the
+optimization model P 3.2 is Pedge(t) = N0
+ζ ( L(t)W τ
+V − 1).
+The overall solution approach of the proposed hetero-
+geneous multi-UAV framework is given in Algorithm 1.
+Algorithm 1 Heterogeneous Multi-UAV Framework
+Input: Trajectories of all I U AVi and list of PoIs li.
+Time, t = 0
+while t ≤ T do
+1. Estimate the {Qi(t)}N
+i=1and {Si(t)}N
+i=1
+2. Select the ith I U AVi to offload data using P2
+3. Compute and offload dof f
+i (t) for I U AVi using P 3.1 to
+Edge U AV
+4. Update Qi(t)
+5. Transmit status message to Edge U AV
+6. Compute and offload dof f
+edge(t) as using P 3.2
+7. Update L(t)
+8. t=t+1
+(a) (b)
+Figure 1: (a) 3D Trajectory of UAVs (b) Top View of
+Trajectory of I U AV s and Edge U AV for 10 times-
+lots with Latency markers
+
+\section{Experimentation}
+In this section, we present the simulation setup to val-
+idate the efficacy of our proposed Distance and Latency
+Aware Trajectory Optimization with Lyapunov based sys-
+tem utility. The pre-computed trajectories of each of the
+I U AVi are shared with the Edge U AV before the sim-
+ulation starts. The simulation parameters are listed in
+Table 1.
+We have considered a 100m x 100m square region with
+PoIs at 2m distance and at heights ranging from 70m
+to 80m. There are total 2500 PoIs in the region. We
+sample 500 PoIs uniformly at random. Simulation were
+performed using three I U AVi and one Edge U AV . All
+the I U AVi start from randomly selected PoIs of a ge-
+ographic cluster. The sequence of PoIs visited by each
+I U AVi is generated using the following steps: 1) Assign
+all the I U AVi to randomly selected PoIs of a geographic
+cluster. 2) All the I U AVi select the nearest non-visited
+PoIs one after the other. This continues till all PoIs are
+visited. 3) Before proceeding to the next PoI, an I U AVi
+collects all the data (Ai(t)) from that PoI. In this process
+of data collection, an I U AVi may remain at the same
+PoI across multiple time-slots until all the data (Ai(t)) is
+collected. For each PoI, the visual data to be collected is
+modelled as the number of bits randomly sampled from a
+Gaussian distribution with mean as 800 Kb and variance
+as 200 Kb. We conducted separate experiments for low
+data and high data scenarios. For low data, the amount
+of data at each PoI is two times the output of Gaussian
+distribution while for high data, the amount of data to be
+collected is 8 times of the Gaussian distribution.
+The optimization parameter V ranges from 10 to 1015.
+The length of each time slot is 60 seconds. Figure 1a
+shows a section of the 3D view of the trajectories followed
+by the I U AVi and Edge U AV . Figure 1b shows the top
+view of the same with the access latency depicted at each
+location point. For better illustration, we have selected a
+sequence of 10 time slots to draw the trajectory. As can be
+observed in Figure 1b, for I U AV3 the access latency in-
+creases from 5 at location (-26,5.7) to 8 (upper threshold)
+at location (9,25). Afterwards, the I U AV3 gets accessed
+by the Edge U AV resulting in the decrease of access la-
+tency to 1 at location (17,19) in the next time slot.
+In order to validate the performance of our proposed
+framework, we created a baseline approach for both the0
+50
+100
+150
+200
+250
+300
+0 1 2 3 4 5 6 7 8 9 10 11 12 13 14
+Transmission Power of Edge_UAV
+V in Log Scale
+DLAT + Lyapunov DLAT + MAX DAT + Lyapunov DAT + MAX
+(a) Average Edge UAV Trans-
+mission Power consumption0.00E+00
+5.00E+07
+1.00E+08
+1.50E+08
+2.00E+08
+2.50E+08
+3.00E+08
+3.50E+08
+4.00E+08
+0 1 2 3 4 5 6 7 8 9 10 11 12 13 14
+Number of Bits
+V in Log Scale
+DLAT + Lyapunov DLAT + MAX DAT + Lyapunov DAT + MAX
+(b) Average Edge UAV Queue
+length
+Figure 2: Experimental Results on Transmission power
+and Queue Length0
+10
+20
+30
+40
+50
+60
+0 1 2 3 4 5 6 7 8 9 10 11 12 13 14
+Number of Timeslots
+V in Log Scale
+DLAT + Lyapunov DLAT + MAX DAT + Lyapunov DAT + MAX
+Figure 3: Comparison of maximum Access Latency
+broad categories of the optimization problems viz.: 1) Tra-
+jectory Optimization and 2) Transmission Energy and sys-
+tem stability.
+
+\section{Result and Discussions}
+n this section, we discuss the comparative performances
+of our proposed approach with other baselines.
+\subsection{Influence of the trade-off parameter V on
+Edge U AV}Figure 2a depicts effect of the increase in the parameter V
+with respect to the transmission power of the Edge U AV .
+It is evident that DLAT + MAX and DAT + MAX always
+consume the maximum energy which makes the average
+energy consumption same across different values of V. For
+7
+DAT + Lyapunov and DLAT + Lyapunov, a drop in the
+energy consumption can be observed for V values of 11,
+12 and 13. In the Figure 2b, it can be seen that the
+average Edge U AV queue length stays low for both DLAT
++ MAX and DAT + MAX at all the values of V. For DAT
++ Lyapunov and DLAT + Lyapunov, we can observe that
+the average queue length of Edge U AV starts to increase
+around V = 11, 12 and 13. It is to be noted that the
+deflection points in the Figure 2a and Figure 2b align with
+each other.
+In the Figure 2b, the average queue length of
+Edge U AV increases with increase in V as the weightage
+of the system utility increases. The DLAT and DAT meth-
+ods with Lyapunov shows similar performance whereas
+the MAX approach is not affected with the change in the
+trajectory optimization.
+\subsection{Per Time slot analysis of I U AV_i}
+As shown in Figure 4 [a], per time slot data offloading
+schedule of I U AVi based on the trajectory of Edge U AV
+incurs higher access latency for DAT based approaches.
+Besides this, Figure 4 [b] shows that the queue of I U AVi
+is higher for the DAT combinations throughout. It is in-
+teresting to note from these results that the queue uti-
+lization in DLAT combinations is well spread out keeping
+the energy consumption less for optimal V. However, for
+DAT combinations the queue utilization is more bursty
+in nature and so is the energy consumption which even
+touches the MAX baseline for some time-slots as shown
+in Figure 4 [c]. This behavior can be explained by the
+fact that in the DAT based approaches, the Edge U AV
+selects the nearest I U AV which may not have sufficient
+data to offload at that time instant. On the other hand,
+the DLAT based approaches select the I U AV s optimally
+considering the distance as well as the data availability in
+the I U AV queues.
+Hence, it can seen that our proposed DLAT + Lya-
+punov shows consistently better performances with opti-
+mally balanced trade-off between the trajectory optimiza-
+tion with low access latencies and minimal transmission
+power consumption of the system.
+
+\section{Conclusion}
+AV based applications for progress monitoring and re-
+source tracking are emerging in construction industry.Constructions projects have minimal infrastructure for
+capture and offloading of ground-truth data. This paper
+presents a heterogeneous multi-UAV based framework for
+end-to-end data collection and offloading using a distance
+and latency aware trajectory optimization. The Lyapunov
+optimization approach is used to ensure the stability of
+the system in terms of expected system queue backlogs by
+breaking the system optimization problem into two sub-
+problems. The simulation results show that the access
+latency of our proposed (DLAT + Lyapunov) approach
+performs better than other baseline approaches. More-
+over, the analysis of system parameter V has shown a
+trade-off between the queue stability and the system util-
+ity.
+\bibliographystyle{plain}
+\bibliography{1}
+
+\end{multicols}
+\end{document}
+
+https://www.overleaf.com/project/64cc90055a4a21d0a50c9b34
